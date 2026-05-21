@@ -1,35 +1,49 @@
-const stories = [
-  {
-    objectID: 1,
-    title: "React 19 New Features",
-    url: "https://react.dev",
-    author: "Dan Abramov",
-    points: 120,
-    num_comments: 45
-  },
-  {
-    objectID: 2,
-    title: "JavaScript Performance Tips",
-    url: "https://developer.mozilla.org",
-    author: "MDN Team",
-    points: 95,
-    num_comments: 30
-  }
-];
+import { useState } from "react";
 
-// App component
-const App = () => {
+function App() {
+  console.log("App render");
+
+  const [searchTerm, setSearchTerm] = useState("");
+
+  const stories = [
+    {
+      objectID: 1,
+      title: "React 19 New Features",
+      url: "https://react.dev",
+      author: "Dan Abramov",
+      points: 120,
+      num_comments: 45
+    },
+    {
+      objectID: 2,
+      title: "JavaScript Performance Tips",
+      url: "https://developer.mozilla.org",
+      author: "MDN Team",
+      points: 95,
+      num_comments: 30
+    }
+  ];
+
+  const handleSearch = (event) => {
+    setSearchTerm(event.target.value);
+  };
+
+  const filteredStories = stories.filter((story) =>
+    story.title.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
   return (
     <div>
       <Header />
-      <Search />
-      <List />
+      <Search onSearch={handleSearch} />
+      <List stories={filteredStories} />
     </div>
   );
-};
+}
 
-// Header component
 const Header = () => {
+  console.log("Header render");
+
   return (
     <header>
       <h1>Hacker News Clone</h1>
@@ -37,11 +51,11 @@ const Header = () => {
   );
 };
 
-// Search component (block body + event handler)
-const Search = () => {
+const Search = ({ onSearch }) => {
+  console.log("Search render");
+
   const handleChange = (event) => {
-    console.log("Typing detected!");
-    console.log(event.target.value);
+    onSearch(event);
   };
 
   return (
@@ -52,37 +66,32 @@ const Search = () => {
   );
 };
 
-// List component (concise arrow function inside map)
-const List = () => {
+const List = ({ stories }) => {
+  console.log("List render");
+
   return (
     <div>
       {stories.map((story) => (
-        <div key={story.objectID}>
-          <h3>
-            <a href={story.url} target="_blank" rel="noreferrer">
-              {story.title}
-            </a>
-          </h3>
-
-          <p>Author: {story.author}</p>
-          <p>Points: {story.points}</p>
-          <p>Comments: {story.num_comments}</p>
-        </div>
+        <Item key={story.objectID} story={story} />
       ))}
     </div>
   );
 };
 
-/*
-Reflection:
+const Item = ({ story }) => {
+  return (
+    <div>
+      <h3>
+        <a href={story.url} target="_blank" rel="noreferrer">
+          {story.title}
+        </a>
+      </h3>
 
-1. When do we use concise body arrow functions?
-- When the function only returns a single expression
+      <p>Author: {story.author}</p>
+      <p>Points: {story.points}</p>
+      <p>Comments: {story.num_comments}</p>
+    </div>
+  );
+};
 
-2. When do we use block body arrow functions?
-- When we need multiple lines or logic before returning
-
-3. What does an event object contain?
-- Information about the event (target element, value, type, etc.)
-*/
 export default App;
