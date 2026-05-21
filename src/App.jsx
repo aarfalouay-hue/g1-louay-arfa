@@ -1,42 +1,40 @@
-const courseTitle = "React Fundamentals";
-
-function App() {
-  const studentName = "Louay";
-
-  const student = {
-    name: "Louay",
-    age: 20,
-    track: "IT"
-  };
-
-  function sayHello() {
-    return `Hello ${studentName}, welcome back!`;
+const stories = [
+  {
+    objectID: 1,
+    title: "React 19 New Features",
+    url: "https://react.dev",
+    author: "Dan Abramov",
+    points: 120,
+    num_comments: 45
+  },
+  {
+    objectID: 2,
+    title: "JavaScript Performance Tips",
+    url: "https://developer.mozilla.org",
+    author: "MDN Team",
+    points: 95,
+    num_comments: 30
   }
-
+]
+function App() {
   return (
+    
     <div>
-      <h1>Welcome to My React Journey</h1>
+      {stories.map((story) => {
+        return (
+          /*title as a link to the story's URL*/
+        <div key={story.objectID}>
+  <h3>
+    <a href={story.url} target="_blank" rel="noreferrer">
+      {story.title}
+    </a>
+  </h3>
 
-      <p>Student Name: {studentName}</p>
-
-      <p>Course: {courseTitle}</p>
-
-      <p>
-        Welcome to {courseTitle}, {studentName}!
-      </p>
-
-      <div>
-        <label htmlFor="studentInput">Student Name:</label>
-        <input type="text" id="studentInput" />
-      </div>
-
-      <p>Name: {student.name}</p>
-      <p>Age: {student.age}</p>
-      <p>Track: {student.track}</p>
-
-      <p>{sayHello()}</p>
+  <p>Author: {story.author}</p>
+  <p>Points: {story.points}</p>
+  <p>Comments: {story.num_comments}</p>
+</div>);
+      })}
     </div>
   );
-}
-
-export default App;
+};
