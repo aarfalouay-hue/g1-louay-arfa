@@ -1,41 +1,50 @@
 import { useState, useEffect } from "react";
 
-/* ---------------- INITIAL DATA ---------------- */
-const initialStories = [
-  {
-    objectID: 1,
-    title: "React 19 New Features",
-    url: "https://react.dev",
-    author: "Dan Abramov",
-    points: 120,
-    num_comments: 45
-  },
-  {
-    objectID: 2,
-    title: "JavaScript Performance Tips",
-    url: "https://developer.mozilla.org",
-    author: "MDN Team",
-    points: 95,
-    num_comments: 30
-  }
-];
+/* ---------------- INITIAL DATA (fallback) ---------------- */
+const initialStories = [];
+
+/* ---------------- API ---------------- */
+const API_BASE = "https://hn.algolia.com/api/v1/search?query=";
 
 /* ---------------- APP ---------------- */
 function App() {
-  console.log("App render");
-
-  const [searchTerm, setSearchTerm] = useState(() => {
-    return localStorage.getItem("search") || "";
-  });
+  const [searchTerm, setSearchTerm] = useState("");
+  const [url, setUrl] = useState(`${API_BASE}react`);
 
   const [stories, setStories] = useState(initialStories);
 
-  useEffect(() => {
-    localStorage.setItem("search", searchTerm);
-  }, [searchTerm]);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isError, setIsError] = useState(false);
 
-  const handleSearch = (event) => {
+  /* ---------------- FETCH DATA ---------------- */
+  useEffect(() => {
+    const fetchData = async () => {
+      setIsLoading(true);
+      setIsError(false);
+
+      try {
+        const response = await fetch(url);
+        const data = await response.json();
+
+        setStories(data.hits);
+      } catch (error) {
+        setIsError(true);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    fetchData();
+  }, [url]);
+
+  /* ---------------- HANDLERS ---------------- */
+  const handleSearchInput = (event) => {
     setSearchTerm(event.target.value);
+  };
+
+  const handleSearchSubmit = () => {
+    if (!searchTerm) return;
+    setUrl(`${API_BASE}${searchTerm}`);
   };
 
   const handleRemoveStory = (storyId) => {
@@ -45,19 +54,33 @@ function App() {
     setStories(newStories);
   };
 
-  const filteredStories = stories.filter((story) =>
-    story.title.toLowerCase().includes(searchTerm.toLowerCase())
-  );
-
+  /* ---------------- UI ---------------- */
   return (
     <div>
       <Header />
 
-      <InputWithLabel id="search" value={searchTerm} onInputChange={handleSearch}>
+      <InputWithLabel
+        id="search"
+        value={searchTerm}
+        onInputChange={handleSearchInput}
+      >
         <strong>Search:</strong>
       </InputWithLabel>
 
-      <List stories={filteredStories} onRemove={handleRemoveStory} />
+      <button
+        onClick={handleSearchSubmit}
+        disabled={!searchTerm}
+      >
+        Search
+      </button>
+
+      {isError && <p>Something went wrong...</p>}
+
+      {isLoading ? (
+        <p>Loading...</p>
+      ) : (
+        <List stories={stories} onRemove={handleRemoveStory} />
+      )}
     </div>
   );
 }
@@ -66,12 +89,12 @@ function App() {
 const Header = () => {
   return (
     <header>
-      <h1>Hacker News Clone</h1>
+      <h1>Hacker News API App</h1>
     </header>
   );
 };
 
-/* ---------------- REUSABLE INPUT COMPONENT ---------------- */
+/* ---------------- INPUT ---------------- */
 const InputWithLabel = ({ id, value, onInputChange, children }) => {
   return (
     <div>
