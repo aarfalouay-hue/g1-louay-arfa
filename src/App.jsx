@@ -1,9 +1,11 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 function App() {
   console.log("App render");
 
-  const [searchTerm, setSearchTerm] = useState("");
+  const [searchTerm, setSearchTerm] = useState(() => {
+    return localStorage.getItem("search") || "";
+  });
 
   const stories = [
     {
@@ -28,6 +30,10 @@ function App() {
     setSearchTerm(event.target.value);
   };
 
+  useEffect(() => {
+    localStorage.setItem("search", searchTerm);
+  }, [searchTerm]);
+
   const filteredStories = stories.filter((story) =>
     story.title.toLowerCase().includes(searchTerm.toLowerCase())
   );
@@ -35,7 +41,7 @@ function App() {
   return (
     <div>
       <Header />
-      <Search onSearch={handleSearch} />
+      <Search searchTerm={searchTerm} onSearch={handleSearch} />
       <List stories={filteredStories} />
     </div>
   );
@@ -51,17 +57,18 @@ const Header = () => {
   );
 };
 
-const Search = ({ onSearch }) => {
+const Search = ({ searchTerm, onSearch }) => {
   console.log("Search render");
-
-  const handleChange = (event) => {
-    onSearch(event);
-  };
 
   return (
     <div>
       <label htmlFor="search">Search:</label>
-      <input id="search" type="text" onChange={handleChange} />
+      <input
+        id="search"
+        type="text"
+        value={searchTerm}
+        onChange={onSearch}
+      />
     </div>
   );
 };
