@@ -1,5 +1,26 @@
 import { useState, useEffect } from "react";
 
+/* ---------------- INITIAL DATA ---------------- */
+const initialStories = [
+  {
+    objectID: 1,
+    title: "React 19 New Features",
+    url: "https://react.dev",
+    author: "Dan Abramov",
+    points: 120,
+    num_comments: 45
+  },
+  {
+    objectID: 2,
+    title: "JavaScript Performance Tips",
+    url: "https://developer.mozilla.org",
+    author: "MDN Team",
+    points: 95,
+    num_comments: 30
+  }
+];
+
+/* ---------------- APP ---------------- */
 function App() {
   console.log("App render");
 
@@ -7,32 +28,22 @@ function App() {
     return localStorage.getItem("search") || "";
   });
 
-  const stories = [
-    {
-      objectID: 1,
-      title: "React 19 New Features",
-      url: "https://react.dev",
-      author: "Dan Abramov",
-      points: 120,
-      num_comments: 45
-    },
-    {
-      objectID: 2,
-      title: "JavaScript Performance Tips",
-      url: "https://developer.mozilla.org",
-      author: "MDN Team",
-      points: 95,
-      num_comments: 30
-    }
-  ];
+  const [stories, setStories] = useState(initialStories);
+
+  useEffect(() => {
+    localStorage.setItem("search", searchTerm);
+  }, [searchTerm]);
 
   const handleSearch = (event) => {
     setSearchTerm(event.target.value);
   };
 
-  useEffect(() => {
-    localStorage.setItem("search", searchTerm);
-  }, [searchTerm]);
+  const handleRemoveStory = (storyId) => {
+    const newStories = stories.filter(
+      (story) => story.objectID !== storyId
+    );
+    setStories(newStories);
+  };
 
   const filteredStories = stories.filter((story) =>
     story.title.toLowerCase().includes(searchTerm.toLowerCase())
@@ -41,15 +52,18 @@ function App() {
   return (
     <div>
       <Header />
-      <Search searchTerm={searchTerm} onSearch={handleSearch} />
-      <List stories={filteredStories} />
+
+      <InputWithLabel id="search" value={searchTerm} onInputChange={handleSearch}>
+        <strong>Search:</strong>
+      </InputWithLabel>
+
+      <List stories={filteredStories} onRemove={handleRemoveStory} />
     </div>
   );
 }
 
+/* ---------------- HEADER ---------------- */
 const Header = () => {
-  console.log("Header render");
-
   return (
     <header>
       <h1>Hacker News Clone</h1>
@@ -57,35 +71,38 @@ const Header = () => {
   );
 };
 
-const Search = ({ searchTerm, onSearch }) => {
-  console.log("Search render");
-
+/* ---------------- REUSABLE INPUT COMPONENT ---------------- */
+const InputWithLabel = ({ id, value, onInputChange, children }) => {
   return (
     <div>
-      <label htmlFor="search">Search:</label>
+      <label htmlFor={id}>{children}</label>
       <input
-        id="search"
+        id={id}
         type="text"
-        value={searchTerm}
-        onChange={onSearch}
+        value={value}
+        onChange={onInputChange}
       />
     </div>
   );
 };
 
-const List = ({ stories }) => {
-  console.log("List render");
-
+/* ---------------- LIST ---------------- */
+const List = ({ stories, onRemove }) => {
   return (
     <div>
       {stories.map((story) => (
-        <Item key={story.objectID} story={story} />
+        <Item
+          key={story.objectID}
+          story={story}
+          onRemove={onRemove}
+        />
       ))}
     </div>
   );
 };
 
-const Item = ({ story }) => {
+/* ---------------- ITEM ---------------- */
+const Item = ({ story, onRemove }) => {
   return (
     <div>
       <h3>
@@ -97,6 +114,10 @@ const Item = ({ story }) => {
       <p>Author: {story.author}</p>
       <p>Points: {story.points}</p>
       <p>Comments: {story.num_comments}</p>
+
+      <button onClick={() => onRemove(story.objectID)}>
+        Dismiss
+      </button>
     </div>
   );
 };
